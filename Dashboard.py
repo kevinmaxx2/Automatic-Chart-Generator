@@ -64,7 +64,7 @@ def show_file_preview(df):
     st.write("Data Summary:")
     st.write(df.describe())
 
-def process_data(df):
+def process_data(df, numeric_columns):
     if st.checkbox('Remove missing values'):
         df = df.dropna()
     if st.checkbox('Normalize data'):
@@ -90,7 +90,23 @@ def plot_data(df, index_column, numeric_columns):
         st.bar_chart(data)
     elif chart_choice == 'Scatter Plot':
         st.write(px.scatter(df, x=index_column, y=column_choice))
+    
+    # Display chart information
+    st.subheader("Chart Information")
+    st.write(f"**Chart Type:** {chart_choice}")
+    st.write(f"**Column Selected:** {column_choice}")
+    st.write(f"**Aggregation Type:** {agg_choice}")
+    st.write(f"**Data Points:** {len(data)}")
 
+    if chart_choice == 'Scatter Plot':
+        st.write(f"**X-axis:** {index_column}")
+        st.write(f"**Y-axis:** {column_choice}")
+    
+    st.write("**Data Types:**")
+    st.write(df.dtypes)
+    
+    st.write("**Data Summary:**")
+    st.write(df.describe())
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -124,7 +140,7 @@ if file:
         numeric_columns = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col]) and col != index_column]
 
         if numeric_columns:
-            df = process_data(df)
+            df = process_data(df, numeric_columns)
             plot_data(df, index_column, numeric_columns)
         else:
             st.error("No numeric columns in your data")
