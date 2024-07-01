@@ -14,33 +14,28 @@ def toggle_theme():
     st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
 
 def apply_theme():
-    common_styles = """
-    <style>
-    .main { padding: 10px; }
-    .stButton>button { border-radius: 5px; }
-    </style>
-    """
-    light_theme = """
-    <style>
-    .main { background-color: #FFFFFF; color: #000000; font-size: 16px; }
-    .stTitle h1 { color: #000000; font-size: 32px; }
-    .stButton>button { background-color: #FFFFFF; color: #000000; }
-    </style>
-    """
-    dark_theme = """
-    <style>
-    .main { background-color: #121212; color: #FFFFFF; font-size: 16px; }
-    .stTitle h1 { color: #D3D3D3; font-size: 32px; }
-    .stButton>button { background-color: #4CAF50; color: #FFFFFF; }
-    .stFileUploader label, .stRadio div, .stSelectbox div { color: #FFFFFF; }
-    .stSelectbox select, .stSelectbox div { color: #FFFFFF; background-color: #2E2E2E; }
-    </style>
-    """
-    st.markdown(common_styles, unsafe_allow_html=True)
     if st.session_state.theme == "dark":
-        st.markdown(dark_theme, unsafe_allow_html=True)
+        st.markdown(
+            """
+            <style>
+            .main { background-color: #121212; color: #FFFFFF; }
+            .stButton>button { background-color: #4CAF50; color: #FFFFFF; }
+            .stFileUploader label, .stRadio div, .stSelectbox div { color: #FFFFFF; }
+            .stSelectbox select, .stSelectbox div { color: #FFFFFF; background-color: #2E2E2E; }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
     else:
-        st.markdown(light_theme, unsafe_allow_html=True)
+        st.markdown(
+            """
+            <style>
+            .main { background-color: #FFFFFF; color: #000000; }
+            .stButton>button { background-color: #FFFFFF; color: #000000; }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
 def load_file(uploaded_file):
     try:
@@ -77,36 +72,39 @@ def plot_data(df, index_column, numeric_columns):
     chart_choice = st.radio("Choose your graph type:", ('Line Chart', 'Bar Chart', 'Scatter Plot'))
     agg_choice = st.radio("Choose the aggregation type:", ('Average', 'Count'))
 
-    # Aggregate data based on user selection
-    if agg_choice == 'Average':
-        data = df.set_index(index_column)[column_choice].groupby(index_column).mean()
-    elif agg_choice == 'Count':
-        data = df.set_index(index_column)[column_choice].groupby(index_column).count()
+    try:
+        # Aggregate data based on user selection
+        if agg_choice == 'Average':
+            data = df.set_index(index_column)[column_choice].groupby(index_column).mean()
+        elif agg_choice == 'Count':
+            data = df.set_index(index_column)[column_choice].groupby(index_column).count()
 
-    # Plot the chart based on user selection
-    if chart_choice == 'Line Chart':
-        st.line_chart(data)
-    elif chart_choice == 'Bar Chart':
-        st.bar_chart(data)
-    elif chart_choice == 'Scatter Plot':
-        st.write(px.scatter(df, x=index_column, y=column_choice))
-    
-    # Display chart information
-    st.subheader("Chart Information")
-    st.write(f"**Chart Type:** {chart_choice}")
-    st.write(f"**Column Selected:** {column_choice}")
-    st.write(f"**Aggregation Type:** {agg_choice}")
-    st.write(f"**Data Points:** {len(data)}")
+        # Plot the chart based on user selection
+        if chart_choice == 'Line Chart':
+            st.line_chart(data)
+        elif chart_choice == 'Bar Chart':
+            st.bar_chart(data)
+        elif chart_choice == 'Scatter Plot':
+            st.write(px.scatter(df, x=index_column, y=column_choice))
+        
+        # Display chart information
+        st.subheader("Chart Information")
+        st.write(f"**Chart Type:** {chart_choice}")
+        st.write(f"**Column Selected:** {column_choice}")
+        st.write(f"**Aggregation Type:** {agg_choice}")
+        st.write(f"**Data Points:** {len(data)}")
 
-    if chart_choice == 'Scatter Plot':
-        st.write(f"**X-axis:** {index_column}")
-        st.write(f"**Y-axis:** {column_choice}")
-    
-    st.write("**Data Types:**")
-    st.write(df.dtypes)
-    
-    st.write("**Data Summary:**")
-    st.write(df.describe())
+        if chart_choice == 'Scatter Plot':
+            st.write(f"**X-axis:** {index_column}")
+            st.write(f"**Y-axis:** {column_choice}")
+        
+        st.write("**Data Types:**")
+        st.write(df.dtypes)
+        
+        st.write("**Data Summary:**")
+        st.write(df.describe())
+    except Exception as e:
+        st.error(f"An error occurred while generating the chart: {e}")
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
